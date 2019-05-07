@@ -8,12 +8,11 @@ import os
 import csv
 import datetime
 import time
-import requests
+import os
 
-def measure_download_speed():
-    # wget -O /dev/null http://speedtest.tele2.net/10GB.zip
-    
-    return 0
+
+from pyspeedtest import SpeedTest
+
 
 def run_speedtest():
     print("--- running speedtest ---")
@@ -24,7 +23,17 @@ def run_speedtest():
     ts = time.time()
     date = datetime.datetime.fromtimestamp(ts).strftime("%d.%m.%Y %H:%M:%S")
     try:
-        download_speed_mb = measure_download_speed()
+        nb_runs = int(os.environ['NB_RUNS']) if 'NB_RUNS' in os.environ else 2
+        host = os.environ['HOST'] if 'HOST' in os.environ else None
+        # 'speedcheck-ham.kabeldeutschland.de'
+        print('Running', nb_runs, ' runs against ', host)
+        speed_test = SpeedTest(host=host, runs=nb_runs)
+        download_speed_mb = int(10 * speed_test.download() / 1024 / 1024) / 10
+        print('Download', download_speed_mb, 'MB/s')
+        upload_speed_mb = int(10 * speed_test.upload() / 1024 / 1024) / 10
+        print('Upload', upload_speed_mb, 'MB/s')
+        ping_ms = int(10 * speed_test.ping()) / 10
+        print('Ping', ping_ms, 'ms')
 
 
     except Exception as e:
@@ -35,8 +44,6 @@ def run_speedtest():
         ping_ms = 0
 
     print(date, download_speed_mb, upload_speed_mb, ping_ms)
-
-#    return
 
     # save the data to file for local network plotting
     filepath = os.path.dirname(os.path.abspath(__file__)) + "/../data/result.csv"
@@ -62,4 +69,3 @@ if __name__ == "__main__":
     except Exception as e:
         print("Exception")
         print(e)
-
