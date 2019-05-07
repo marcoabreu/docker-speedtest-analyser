@@ -1,0 +1,26 @@
+FROM ubuntu:latest
+
+# install dependencies
+RUN apt update && apt install -y \
+  bash \
+  git \
+  wget \
+  nodejs \
+  npm \
+  nginx \
+  libnginx-mod-http-lua \
+  python3 \
+  python3-pip
+
+
+RUN pip3 install requests
+
+RUN mkdir -p /var/www/html
+
+# install webroot files
+ADD ./ /var/www/html/
+
+
+#RUN chown -R nginx:nginx /var/www/html/
+RUN chmod +x /var/www/html/scripts/speedtest.py
+ENTRYPOINT ["/var/www/html/scripts/speedtest.py"]
